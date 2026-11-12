@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es-MX">
 <head><meta name="ms-sp-authoring-source" content="agent">
 <meta charset="utf-8">
@@ -52,6 +52,7 @@ button,input{font-family:inherit}
 :where(a,button,input,summary):focus-visible{outline:3px solid var(--red);outline-offset:3px}
 
 /* Enlace de salto (accesibilidad) */
+[hidden]{display:none!important}
 .skip{position:absolute;left:var(--m);top:-80px;z-index:100;background:var(--red);color:var(--white);padding:12px 18px;border-radius:var(--r-ctl);text-decoration:none}
 .skip:focus{top:calc(env(safe-area-inset-top,0px) + 8px)}
 
@@ -248,6 +249,7 @@ footer .brandline{font-weight:700;color:var(--ink)}
 <main id="main">
   <div class="wrap">
 
+    <div id="intro">
     <h2 class="sec">¿Qué tipo de retorno necesitas?</h2>
     <div class="tiles">
       <button class="tile primary" type="button" data-go="retorno">
@@ -270,6 +272,7 @@ footer .brandline{font-weight:700;color:var(--ink)}
       <li><div class="chev"><svg class="ic" aria-hidden="true"><use href="#i-cardx"/></svg>Paga y valídalo por correo</div><p>Haz la transferencia con tu referencia y envía el comprobante en el mismo correo.</p></li>
       <li><div class="chev"><svg class="ic" aria-hidden="true"><use href="#i-box"/></svg>Recibe tu guía de retorno</div><p>Se genera al confirmar el pago. El retorno sale cuando la autoridad lo autoriza.</p></li>
     </ol>
+    </div>
 
     <h2 class="sec">Preguntas frecuentes</h2>
     <div class="chips-wrap"><div class="chips" id="chips"></div></div>
@@ -456,6 +459,7 @@ function icon(name){ return '<svg class="ic" aria-hidden="true"><use href="#i-'+
 FAQ.forEach(function(f){ f._s = norm(f.q+' '+f.k+' '+strip(f.a)); });
 
 var state = {cat:'todas', term:'', open:false};
+var wasSearching = false;
 var listEl=document.getElementById('list'), chipsEl=document.getElementById('chips'),
     countEl=document.getElementById('count'), emptyEl=document.getElementById('empty'),
     qEl=document.getElementById('q'), toggleBtn=document.getElementById('toggleAll');
@@ -493,9 +497,18 @@ function render(){
   toggleBtn.style.display=shown?'':'none';
   toggleBtn.textContent=state.open?'Cerrar todas':'Abrir todas';
   buildChips();
+  var searching=!!state.term.trim();
+  var intro=document.getElementById('intro'); if(intro){ intro.hidden=searching; }
+  if(searching && !wasSearching){
+    var vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+    if(listEl.getBoundingClientRect().top>vh*0.55){ qEl.scrollIntoView({behavior:'smooth',block:'start'}); }
+  }
+  wasSearching=searching;
 }
 
-qEl.addEventListener('input', function(){ state.term=qEl.value; state.open=false; if(state.term.trim()){ state.cat='todas'; } render(); });
+function onSearch(){ state.term=qEl.value; state.open=false; if(state.term.trim()){ state.cat='todas'; } render(); }
+qEl.addEventListener('input', onSearch);
+qEl.addEventListener('search', onSearch);
 toggleBtn.addEventListener('click', function(){ state.open=!state.open; render(); });
 document.querySelectorAll('[data-go]').forEach(function(b){
   b.addEventListener('click', function(){
